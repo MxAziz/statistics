@@ -1,0 +1,121 @@
+E1-1 : Simulate F-distributed data and study its relationship with chi-square
+--------------------------------------------------------------
+THEORY
+- If U ~ chi-square(d1) and V ~ chi-square(d2) are independent, then
+      F = (U/d1) / (V/d2)  ~  F(d1, d2)
+- Mean = d2/(d2-2) for d2 > 2. Right-skewed, values >= 0.
+- Special links: t^2 ~ F(1, d);  as d2 -> infinity, d1*F -> chi-square(d1).
+
+OBJECTIVE
+- Generate F data from two independent chi-square variables and verify it
+  matches the theoretical F distribution.
+
+PSEUDO CODE
+  SET seed, n = 10000, d1 = 5, d2 = 10
+  U <- n random values from chi-square(d1)
+  V <- n random values from chi-square(d2)
+  F <- (U/d1) / (V/d2)
+  PLOT histogram of F; OVERLAY theoretical F density df(x, d1, d2)
+  COMPARE mean(F) and var(F) with theoretical values
+  RUN Kolmogorov-Smirnov test of F against pf(., d1, d2)
+  SET d2 = very large (e.g. 5000); CHECK that d1*F  ~  chi-square(d1)
+
+--------------------------------------------------------------
+E1-2 : Generate chi-square data and analyze its properties
+--------------------------------------------------------------
+THEORY
+- If Z1,...,Zk are independent N(0,1), then  X = Z1^2 + ... + Zk^2 ~ chi-square(k).
+- Mean = k, Variance = 2k, right-skewed; skewness falls as k grows
+  and the shape approaches normal for large k.
+- Additive: chi-square(a) + chi-square(b) = chi-square(a+b) (if independent).
+
+OBJECTIVE
+- Generate chi-square data from squared normals and study mean, variance,
+  shape and the effect of degrees of freedom.
+
+PSEUDO CODE
+  SET seed, n = 10000
+  FOR each k in {2, 5, 10, 30}
+      Z <- n x k matrix of N(0,1) values
+      X <- row sums of Z^2
+      COMPUTE mean(X) (expect k), var(X) (expect 2k), skewness(X)
+      PLOT histogram of X; OVERLAY dchisq(x, k)
+      DRAW Q-Q plot of X against chi-square(k) quantiles
+  END FOR
+  VERIFY additivity: sum of chi-square(3) and chi-square(4) vs chi-square(7)
+
+--------------------------------------------------------------
+E1-3 : Compare t-distribution with normal for small samples
+--------------------------------------------------------------
+THEORY
+- For X ~ N(mu, sigma^2), the statistic  T = (Xbar - mu) / (s / sqrt(n))
+  follows t with (n-1) d.f. (sigma unknown, replaced by s).
+- t has heavier tails than N(0,1); the smaller n is, the heavier the tails.
+- As n -> infinity, t(n-1) -> N(0,1).
+
+OBJECTIVE
+- Show that for small n the t-distribution, not the normal, describes the
+  standardized mean, and that the two coincide for large n.
+
+PSEUDO CODE
+  SET seed, reps = 10000, mu = 50, sigma = 10
+  FOR each n in {3, 5, 10, 30, 100}
+      REPEAT reps times
+          x <- sample of size n from N(mu, sigma)
+          T[i] <- (mean(x) - mu) / (sd(x)/sqrt(n))
+      END REPEAT
+      PLOT density of T; OVERLAY dnorm(x) and dt(x, n-1)
+      COMPUTE P(|T| > 1.96) and COMPARE with 0.05
+      COMPARE critical values qt(0.975, n-1) vs qnorm(0.975)
+  END FOR
+
+--------------------------------------------------------------
+E1-4 : Sampling distribution of medians and ranges
+--------------------------------------------------------------
+THEORY
+- Any statistic computed from random samples has its own sampling distribution.
+- Median: for normal data, approximately N(mu, pi*sigma^2/(2n));
+  it is more variable than the mean (about 1.57 times the variance).
+- Range R = max - min: skewed, and its mean increases with n.
+
+OBJECTIVE
+- Draw many samples from a population and study the distribution of the
+  sample median and sample range.
+
+PSEUDO CODE
+  SET seed, reps = 5000, n = 20
+  population: N(mu = 100, sigma = 15)
+  REPEAT reps times
+      x <- sample of size n from the population
+      med[i] <- median(x)
+      rng[i] <- max(x) - min(x)
+  END REPEAT
+  PLOT histograms of med and rng
+  COMPUTE mean, sd of med and rng
+  COMPARE sd(med) with sqrt(pi/(2n)) * sigma
+  REPEAT for n = 5, 20, 100 and observe changes in spread and mean of range
+
+--------------------------------------------------------------
+E1-5 : Estimate population parameters from sample data
+--------------------------------------------------------------
+THEORY
+- Point estimators: sample mean (for mu), sample variance with n-1 divisor
+  (for sigma^2), sample proportion (for p).
+- Interval estimate (95% CI for mean): xbar +/- t(0.975, n-1) * s/sqrt(n).
+- A good estimator is unbiased, consistent and has small variance.
+
+OBJECTIVE
+- Estimate mean, variance and proportion from a sample and compare them with
+  the true population values; construct a confidence interval.
+
+PSEUDO CODE
+  SET seed; DEFINE population N(mu = 60, sigma = 8), true p = 0.3
+  DRAW sample x of size n = 50 from population
+  DRAW binary sample b of size n from Bernoulli(p)
+  mu_hat <- mean(x)
+  var_hat <- var(x)                 # n-1 divisor
+  p_hat <- mean(b)
+  se <- sd(x) / sqrt(n)
+  CI <- mu_hat -/+ qt(0.975, n-1) * se
+  PRINT estimates, true values, CI
+  (Optional) REPEAT 1000 times and report % of CIs that contain true mu

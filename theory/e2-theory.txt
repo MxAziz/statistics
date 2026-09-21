@@ -1,0 +1,103 @@
+E2-1 : Consistency - convergence to the true parameter
+--------------------------------------------------------------
+THEORY
+- An estimator T_n is consistent for theta if T_n -> theta in probability,
+  i.e. P(|T_n - theta| > eps) -> 0 as n -> infinity.
+- Sufficient condition: Bias(T_n) -> 0 and Var(T_n) -> 0.
+- Example: sample mean is consistent for mu (Law of Large Numbers).
+
+OBJECTIVE
+- Show that the estimate gets closer to the true parameter as sample size grows.
+
+PSEUDO CODE
+  SET seed; true mu = 10, sigma = 3
+  sizes <- {10, 50, 100, 500, 1000, 5000, 10000}
+  FOR each n in sizes
+      x <- sample of size n from N(mu, sigma)
+      est[n] <- mean(x)
+      REPEAT 1000 times: compute P(|mean - mu| > 0.5)
+  END FOR
+  PLOT est against n with horizontal line at true mu
+  PLOT the deviation probability against n (should fall to 0)
+
+--------------------------------------------------------------
+E2-2 : Compare biased and unbiased estimators
+--------------------------------------------------------------
+THEORY
+- Bias = E(T) - theta. Unbiased if E(T) = theta.
+- Sample variance with divisor n:   S_b^2 = (1/n)  * sum (x - xbar)^2  is biased,
+  E(S_b^2) = ((n-1)/n) * sigma^2.
+- With divisor n-1: S^2 = (1/(n-1)) * sum (x - xbar)^2  is unbiased.
+- Compare using MSE = Variance + Bias^2 (a biased estimator can have lower MSE).
+
+OBJECTIVE
+- Numerically show bias of the two variance estimators and compare their MSE.
+
+PSEUDO CODE
+  SET seed, reps = 10000, n = 10, true sigma^2 = 25
+  REPEAT reps times
+      x <- sample of size n from N(0, 5)
+      s2_unb[i] <- sum((x - mean(x))^2) / (n - 1)
+      s2_bia[i] <- sum((x - mean(x))^2) / n
+  END REPEAT
+  bias  <- mean(estimates) - sigma^2      for both
+  MSE   <- mean((estimates - sigma^2)^2)  for both
+  PRINT bias, variance and MSE table
+  PLOT the two sampling distributions with a line at true sigma^2
+
+--------------------------------------------------------------
+E2-3 : Efficiency of estimators
+--------------------------------------------------------------
+THEORY
+- Among unbiased estimators, the one with smaller variance is more efficient.
+- Relative efficiency: RE = Var(T2) / Var(T1) (T1 is more efficient if RE > 1).
+- Cramer-Rao lower bound: Var(T) >= 1 / (n * I(theta)); an estimator
+  attaining it is fully efficient.
+- For normal data: sample mean is more efficient than sample median
+  (efficiency of median ~ 2/pi = 0.637).
+
+OBJECTIVE
+- Calculate and compare the efficiency of sample mean and sample median.
+
+PSEUDO CODE
+  SET seed, reps = 10000, n = 30
+  REPEAT reps times
+      x <- sample of size n from N(0, 1)
+      m1[i] <- mean(x)
+      m2[i] <- median(x)
+  END REPEAT
+  v1 <- var(m1);  v2 <- var(m2)
+  RE <- v1 / v2                    # efficiency of median relative to mean
+  COMPARE v1 with CRLB = sigma^2 / n
+  PRINT variances and RE; state which estimator is more efficient
+
+--------------------------------------------------------------
+E2-4 : Maximum Likelihood Estimators (Binomial, Poisson, Normal)
+--------------------------------------------------------------
+THEORY
+- MLE is the value of the parameter that maximizes the likelihood
+  L(theta) = product of f(x_i; theta); equivalently maximizes log L.
+- Solve d(log L)/d(theta) = 0.
+- Binomial(m, p):   p_hat = sum(x) / (n*m)
+- Poisson(lambda):  lambda_hat = xbar
+- Normal(mu, s^2):  mu_hat = xbar,  sigma2_hat = (1/n) * sum (x - xbar)^2
+
+OBJECTIVE
+- Simulate data from each distribution and recover parameters using MLE
+  formulas and numerical optimization.
+
+PSEUDO CODE
+  SET seed, n = 1000
+  # Binomial
+  x <- n values from Binomial(m = 10, p = 0.4)
+  p_hat <- sum(x) / (n * 10)
+  # Poisson
+  y <- n values from Poisson(lambda = 4)
+  lambda_hat <- mean(y)
+  # Normal
+  z <- n values from N(mu = 5, sigma = 2)
+  mu_hat <- mean(z);  sigma2_hat <- mean((z - mu_hat)^2)
+  # Numerical check
+  DEFINE negative log-likelihood function for each distribution
+  MINIMIZE it with optim()/optimize(); COMPARE with closed-form MLEs
+  PRINT true values vs estimates

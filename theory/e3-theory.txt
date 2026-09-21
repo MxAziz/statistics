@@ -1,0 +1,136 @@
+E3-1 : Simulate decision-making using hypothesis testing
+--------------------------------------------------------------
+THEORY
+- Null hypothesis H0 (status quo) vs alternative H1.
+- Compute a test statistic; reject H0 if it falls in the critical region
+  (or p-value < alpha); otherwise fail to reject H0.
+- Decision rule is fixed before seeing data; alpha = significance level.
+
+OBJECTIVE
+- Simulate repeated experiments and observe how the test leads to
+  reject / do-not-reject decisions when H0 is true and when it is false.
+
+PSEUDO CODE
+  SET seed, alpha = 0.05, n = 25, reps = 5000
+  H0: mu = 50   vs   H1: mu != 50
+  FOR scenario in {true mu = 50, true mu = 53}
+      decisions <- empty vector
+      REPEAT reps times
+          x <- sample of size n from N(true mu, 6)
+          p <- p-value of one-sample t-test of x against 50
+          decisions[i] <- "Reject" IF p < alpha ELSE "Fail to reject"
+      END REPEAT
+      PRINT proportion of each decision
+  END FOR
+
+--------------------------------------------------------------
+E3-2 : Best critical region for simple vs composite hypotheses
+--------------------------------------------------------------
+THEORY
+- Neyman-Pearson Lemma: for simple H0: theta = theta0 vs simple H1: theta = theta1,
+  the most powerful (best) critical region of size alpha is
+      C = { x : L(theta1; x) / L(theta0; x) >= k },  with P(C | H0) = alpha.
+- If the same region is best for every theta1 in a composite H1
+  (e.g. theta > theta0), it is the Uniformly Most Powerful (UMP) region.
+- Normal mean, known sigma, H1: mu > mu0  ->  C = { xbar > mu0 + z_alpha * sigma/sqrt(n) }.
+
+OBJECTIVE
+- Derive the best critical region using the likelihood ratio and verify it
+  gives size alpha and maximum power.
+
+PSEUDO CODE
+  SET mu0 = 0, mu1 = 1, sigma = 1, n = 16, alpha = 0.05
+  # Simple vs simple
+  c <- mu0 + qnorm(1 - alpha) * sigma / sqrt(n)      # critical value for xbar
+  power <- 1 - pnorm((c - mu1) / (sigma/sqrt(n)))
+  # Simple vs composite (H1: mu > mu0)
+  FOR mu1 in sequence 0 to 2
+      power[mu1] <- 1 - pnorm((c - mu1) / (sigma/sqrt(n)))
+  END FOR
+  PLOT power function; NOTE same c works for all mu1 > mu0 (UMP)
+  SIMULATE data under H0 and H1; CONFIRM size ~ alpha and power ~ formula
+
+--------------------------------------------------------------
+E3-3 : Simulate Type I and Type II errors
+--------------------------------------------------------------
+THEORY
+- Type I error: rejecting H0 when H0 is true;   alpha = P(reject H0 | H0 true).
+- Type II error: accepting H0 when H1 is true;  beta  = P(accept H0 | H1 true).
+- Power = 1 - beta. For fixed n, decreasing alpha increases beta.
+  Increasing n reduces both.
+
+OBJECTIVE
+- Estimate alpha and beta by simulation and observe their trade-off.
+
+PSEUDO CODE
+  SET seed, reps = 10000, n = 20, alpha = 0.05, mu0 = 100, mu1 = 105, sigma = 10
+  # Type I error
+  count <- 0
+  REPEAT reps times
+      x <- sample from N(mu0, sigma)
+      IF t-test p-value < alpha THEN count <- count + 1
+  END REPEAT
+  typeI <- count / reps
+  # Type II error
+  count <- 0
+  REPEAT reps times
+      x <- sample from N(mu1, sigma)
+      IF t-test p-value >= alpha THEN count <- count + 1
+  END REPEAT
+  typeII <- count / reps;  power <- 1 - typeII
+  PRINT typeI, typeII, power; REPEAT for other alpha / n values
+
+--------------------------------------------------------------
+E3-4 : Step-by-step hypothesis testing using real or simulated data
+--------------------------------------------------------------
+THEORY
+- Steps: (1) state H0, H1; (2) choose alpha; (3) choose test and statistic;
+  (4) compute statistic and critical value / p-value; (5) decide; (6) conclude.
+- One-sample t-test:  t = (xbar - mu0) / (s / sqrt(n)),  d.f. = n - 1.
+- Reject H0 if |t| > t(alpha/2, n-1) or p-value < alpha.
+
+OBJECTIVE
+- Carry out a complete hypothesis test manually, then verify with built-in
+  function.
+
+PSEUDO CODE
+  LOAD data (or simulate x ~ N(52, 8), n = 30)
+  SET H0: mu = 50, H1: mu != 50, alpha = 0.05
+  xbar <- mean(x);  s <- sd(x);  n <- length(x)
+  t_stat <- (xbar - 50) / (s / sqrt(n))
+  t_crit <- qt(1 - alpha/2, n - 1)
+  p_val  <- 2 * (1 - pt(abs(t_stat), n - 1))
+  PRINT each step and values
+  IF |t_stat| > t_crit THEN PRINT "Reject H0" ELSE PRINT "Fail to reject H0"
+  VERIFY using t.test(x, mu = 50)
+  PLOT t-distribution with critical regions and observed t marked
+
+--------------------------------------------------------------
+E3-5 : Compare the power of different tests for the same hypothesis
+--------------------------------------------------------------
+THEORY
+- Power = P(reject H0 | H1 true). Test with higher power is preferred.
+- For normal data, the t-test is more powerful than Wilcoxon signed-rank
+  and sign tests.
+- For heavy-tailed data (e.g. t with few d.f.), non-parametric tests can
+  be equal or better.
+
+OBJECTIVE
+- Estimate and compare power of t-test, Wilcoxon and sign test for the same
+  H0 and H1 under different conditions.
+
+PSEUDO CODE
+  SET seed, reps = 2000, n = 20, alpha = 0.05, H0: median = 0
+  FOR distribution in {Normal, t with 3 d.f.}
+      FOR shift in sequence 0 to 1 by 0.2
+          rej_t <- rej_w <- rej_s <- 0
+          REPEAT reps times
+              x <- sample of size n from distribution, ADD shift
+              IF t.test p-value       < alpha THEN rej_t <- rej_t + 1
+              IF wilcox.test p-value  < alpha THEN rej_w <- rej_w + 1
+              IF binom.test(sum(x>0), n) p-value < alpha THEN rej_s <- rej_s + 1
+          END REPEAT
+          power[shift] <- rej / reps   for each test
+      END FOR
+      PLOT power curves of the three tests
+  END FOR
