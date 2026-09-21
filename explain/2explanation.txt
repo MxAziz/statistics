@@ -1,0 +1,360 @@
+
+-----------------
+EXPERIMENT 2.1
+Question: Develop a R source code to demonstrate consistency by
+increasing sample size and observing convergence to the true
+parameter.
+
+Question ta bujhle: ekta estimator (jemon sample mean) er "consistency"
+property dekhate hobe - mane sample size choto theke boro korte korte
+estimate dhire dhire true parameter er kache chole ashe kina, seta
+proman korte hobe.
+----------------------
+
+set.seed(123)
+→ Random number er shuru bindu fix kora hocche.
+
+true_mean <- 25
+→ Amra age theke jani je "true" population mean = 25 (compare korar
+  jonno).
+
+true_sd   <- 5
+→ True population standard deviation = 5 rakha hocche.
+
+sample_sizes <- c(5, 10, 50, 100, 500, 1000, 5000, 10000)
+→ c() diye choto theke boro - 8 ta different sample size er ekta
+  list toiri kora hocche, jate dekhano jay sample size barar shathe
+  ki hoy.
+
+estimates    <- numeric(length(sample_sizes))
+→ numeric(8) diye 8 ta shongkha rakhar moto ekta khali box toiri
+  holo (length(sample_sizes) diye list e koto ta item ache seta
+  automatic ber kora hocche, mane 8).
+
+for (i in seq_along(sample_sizes)) {
+→ seq_along(sample_sizes) mane 1, 2, 3, ..., 8 (list er protita
+  position er index). for loop diye i=1 theke i=8 porjonto protibar
+  {} er bhitorer code cholbe.
+
+  s <- rnorm(sample_sizes[i], true_mean, true_sd)
+→ sample_sizes[i] diye list theke i-number position er sample size
+  ber kora hocche (jemon i=1 hole 5, i=2 hole 10, ityadi). rnorm()
+  diye sei sample size onujayi random normal number generate kora
+  hocche, true_mean o true_sd use kore.
+
+  estimates[i] <- mean(s)
+}
+→ Ei sample s er mean ber kore estimates box er i-number jaigay
+  rakha hocche. } diye loop shesh.
+
+results <- data.frame(SampleSize = sample_sizes, EstimatedMean = estimates,
+                       AbsoluteError = abs(estimates - true_mean))
+→ data.frame() function ta ekta table (jemon Excel sheet) toiri kore
+  jekhane koyekta column thake. Ekhane 3 ta column: SampleSize
+  (koto ta data diye estimate kora hoyeche), EstimatedMean (sheita
+  sample size e mean koto ashlo), AbsoluteError (abs() diye estimate
+  ar true_mean er parthokko er absolute/positive value ber kora
+  hocche - koto ta bhul hoyeche).
+
+print(results)
+→ print() function diye pura table ta screen e dekhano hocche.
+
+plot(sample_sizes, estimates, type = "b", col = "blue", pch = 19, log = "x",
+     main = "Consistency of the Sample Mean Estimator",
+     xlab = "Sample Size (log scale)", ylab = "Estimated Mean")
+→ plot() diye ekta graph anka hocche, x-axis e sample_sizes ar
+  y-axis e estimates. type="b" mane point ar line dutoi dekhabe
+  (both). col="blue" diye nil color, pch=19 diye solid circle point
+  shape. log="x" diye x-axis ke logarithmic scale e dekhano hocche
+  (karon sample size 5 theke 10000 porjonto onek boro range, log
+  scale e valo dekha jay). main diye title, xlab-ylab diye axis er
+  nam.
+
+abline(h = true_mean, col = "red", lwd = 2, lty = 2)
+→ abline(h=...) diye ekta horizontal (onnobhumik) line anka hocche
+  true_mean (=25) er upor diye, red color e, dashed line (lty=2)
+  diye - eita dekhay je true value ta kothay ache, jate estimate
+  line gulo tar shathe koto ta mile jacche seta dekha jay.
+
+legend("topright", legend = c("Estimate","True Mean"), col = c("blue","red"), lty = c(1,2), pch = c(19,NA))
+→ Legend box diye bujhano hocche - blue solid line/point mane
+  "Estimate", red dashed line mane "True Mean".
+
+RESULT/CONCLUSION: Sample size choto (5) theke boro (10000) hote
+hote, estimate ta true_mean (25) er kache kache ashe ar error kome
+jay - eitai estimator er consistency, mane n -> infinity hole
+estimator sotti mane converge kore.
+
+
+---------------
+EXPERIMENT 2.2
+Question: Develop a R source code to compare biased and unbiased
+estimators.
+
+Question ta bujhle: variance hisheb korar duita different formula
+ache - ekta ÷n diye (biased), arekta ÷(n-1) diye (unbiased). Duitar
+average koto ta true variance er kache ashe, seta simulation kore
+dekhate hobe.
+---------------
+
+set.seed(123)
+→ Random number er shuru bindu fix kora hocche.
+
+true_var <- 25
+→ "True" variance = 25 rakha hocche, compare korar jonno.
+
+n        <- 20
+→ Protita sample e 20 ta value thakbe.
+
+n_sim    <- 5000
+→ Total 5000 bar simulation cholbe (5000 ta different sample tola
+  hobe).
+
+biased_var   <- numeric(n_sim)
+→ 5000 ta biased variance rakhar jonno khali box.
+
+unbiased_var <- numeric(n_sim)
+→ 5000 ta unbiased variance rakhar jonno khali box.
+
+for (i in 1:n_sim) {
+→ For loop, i=1 theke i=5000 porjonto cholbe.
+
+  s <- rnorm(n, mean = 10, sd = sqrt(true_var))
+→ rnorm() diye 20 ta random normal number generate kora hocche,
+  mean=10, sd=sqrt(25)=5 diye (variance true_var=25 hote hole sd
+  hote hobe tar borgomul).
+
+  biased_var[i]   <- sum((s - mean(s))^2) / n       # divide by n (biased)
+→ s - mean(s) diye protita value theke mean bad deya hocche
+  (deviation). ^2 diye square kora hocche. sum() diye sob deviation
+  square jog kora hocche. Ei jogfol ke n=20 diye vag kora hocche -
+  eita "biased" variance estimator, karon ei formula gore average e
+  true variance theke ektu kom ashe.
+
+  unbiased_var[i] <- sum((s - mean(s))^2) / (n - 1)  # divide by n-1 (unbiased)
+}
+→ Same deviation square er jogfol, kintu ei bar n-1=19 diye vag kora
+  hocche - eitai "unbiased" variance estimator, R er nijer var()
+  function o eita e use kore. } diye loop shesh.
+
+cat("True Variance                    :", true_var, "\n")
+→ True variance er man print kora hocche.
+
+cat("Average Biased Estimator (/n)    :", mean(biased_var), "\n")
+→ 5000 ta biased_var er average print kora hocche.
+
+cat("Average Unbiased Estimator (/n-1):", mean(unbiased_var), "\n")
+→ 5000 ta unbiased_var er average print kora hocche.
+
+cat("Bias of Biased Estimator          :", mean(biased_var) - true_var, "\n")
+→ Biased estimator er average theke true_var bad diye "koto ta bias
+  ache" seta ber kora hocche - ei man negative hobe (kom thakbe).
+
+cat("Bias of Unbiased Estimator        :", mean(unbiased_var) - true_var, "\n")
+→ Same vabe unbiased estimator er bias ber kora hocche - ei man
+  0 er khub kache thakbe.
+
+boxplot(biased_var, unbiased_var,
+        names = c("Biased (/n)", "Unbiased (/n-1)"),
+        col = c("tomato","lightgreen"),
+        main = "Biased vs Unbiased Estimator of Variance")
+→ boxplot() diye duita group er data (biased_var ar unbiased_var)
+  ekshathe box-plot akare dekhano hocche, jekhane median, quartile,
+  spread ityadi dekha jay. names diye protita box er niche label
+  deya hocche, col diye color deya hocche.
+
+abline(h = true_var, col = "blue", lwd = 2, lty = 2)
+→ True_var (=25) er upor diye ekta horizontal blue dashed line
+  anka hocche, jate bojha jay kon box ta true value er beshi kache.
+
+RESULT/CONCLUSION: Biased estimator (÷n) er average, true variance
+theke ektu kom (negatively biased), kintu unbiased estimator (÷n-1)
+er average, true variance er prai shomoi shoman - mane eita truly
+unbiased.
+
+
+---------------
+EXPERIMENT 2.3
+Question: Develop a R source code to calculate efficiency of
+estimators.
+
+Question ta bujhle: duita different estimator (jemon mean ar median)
+duitai unbiased hote pare, kintu tader variance alada hote pare.
+Jar variance kom, sheta "more efficient" - eita simulation kore
+compare korte hobe.
+---------------
+
+set.seed(123)
+→ Random number er shuru bindu fix kora hocche.
+
+n         <- 30
+→ Protita sample e 30 ta value thakbe.
+
+n_sim     <- 5000
+→ Total 5000 bar simulation cholbe.
+
+true_mean <- 15
+→ True mean = 15, compare korar jonno.
+
+means   <- numeric(n_sim)
+→ 5000 ta sample mean rakhar khali box.
+
+medians <- numeric(n_sim)
+→ 5000 ta sample median rakhar khali box.
+
+for (i in 1:n_sim) {
+  s <- rnorm(n, true_mean, 5)
+→ For loop, protibar 30 ta random normal number generate kora hocche
+  (mean=15, sd=5 diye).
+
+  means[i]   <- mean(s)
+→ Ei sample er mean ber kore means box e rakha hocche.
+
+  medians[i] <- median(s)
+}
+→ Ei sample er median ber kore medians box e rakha hocche. } diye
+  loop shesh.
+
+var_mean   <- var(means)
+→ 5000 ta mean er nijer variance ber kora hocche - mane mean gulo
+  koto ta chorano ache.
+
+var_median <- var(medians)
+→ 5000 ta median er nijer variance ber kora hocche.
+
+efficiency <- var_mean / var_median
+→ Duita variance er ratio ber kora hocche - eita "relative
+  efficiency". Ratio 1 er cheye choto hole mane var_mean choto,
+  mane mean beshi efficient.
+
+cat("Variance of Sample Mean          :", var_mean, "\n")
+→ Sample mean er variance print kora hocche.
+
+cat("Variance of Sample Median        :", var_median, "\n")
+→ Sample median er variance print kora hocche.
+
+cat("Relative Efficiency (Mean/Median):", efficiency, "\n")
+→ Efficiency ratio print kora hocche.
+
+if (efficiency < 1) {
+  cat("=> Sample Mean is more efficient than Sample Median\n")
+} else {
+  cat("=> Sample Median is more efficient than Sample Mean\n")
+}
+→ if-else condition diye check kora hocche - jodi efficiency 1 er
+  cheye choto hoy (mane var_mean, var_median er cheye choto), tahole
+  "Mean is more efficient" print hobe, nahole "Median is more
+  efficient" print hobe.
+
+boxplot(means, medians, names = c("Mean","Median"),
+        col = c("skyblue","salmon"),
+        main = "Efficiency Comparison: Mean vs Median")
+→ boxplot() diye means ar medians duita group ke pashapashi dekhano
+  hocche, jekhan theke visually bujha jay kon distribution beshi
+  chorano (spread beshi).
+
+RESULT/CONCLUSION: Normal distribution er khetre sample mean er
+variance, sample median er variance theke shadharonoto kom hoy,
+tai mean, median er cheye beshi efficient estimator.
+
+
+---------------
+EXPERIMENT 2.4
+Question: Develop a R source code to derive MLEs for parameters of
+binomial, Poisson, and normal distributions using simulated data.
+
+Question ta bujhle: tinta different distribution (Binomial, Poisson,
+Normal) er jonno Maximum Likelihood Estimation (MLE) ki, seta
+simulate kora data theke ber korte hobe, ar formula gulo verify
+korte hobe.
+---------------
+
+set.seed(123)
+→ Random number er shuru bindu fix kora hocche.
+
+## ---- Binomial MLE of p ----
+n_trials <- 20
+→ Protita binomial trial e koto ta "attempt" ache - 20.
+
+true_p   <- 0.3
+→ "True" success probability p = 0.3, compare korar jonno.
+
+binom_data <- rbinom(1000, n_trials, true_p)
+→ rbinom() function diye 1000 ta binomial random number generate
+  kora hocche, jekhane protita number 20 tar moddhe koyta "success"
+  hoyeche seta bole, p=0.3 use kore.
+
+mle_p <- mean(binom_data) / n_trials
+→ Binomial er MLE formula: p_hat = x_bar / n_trials. mean(binom_data)
+  diye average koyta success hoyeche seta ber kore, n_trials=20 diye
+  vag kora hocche - eita e p er MLE estimate.
+
+cat("Binomial MLE of p     :", mle_p, " (True p:", true_p, ")\n")
+→ MLE estimate ar true p pashapashi print kora hocche.
+
+## ---- Poisson MLE of lambda ----
+true_lambda <- 4
+→ "True" lambda (average rate) = 4, compare korar jonno.
+
+pois_data <- rpois(1000, true_lambda)
+→ rpois() diye 1000 ta Poisson random number generate kora hocche,
+  lambda=4 use kore.
+
+mle_lambda <- mean(pois_data)
+→ Poisson er MLE formula: lambda_hat = x_bar (shudhu sample mean).
+  mean(pois_data) diye eita ber kora hocche.
+
+cat("Poisson MLE of lambda :", mle_lambda, " (True lambda:", true_lambda, ")\n")
+→ MLE estimate ar true lambda pashapashi print kora hocche.
+
+## ---- Normal MLE of mu and sigma^2 ----
+true_mu <- 10; true_sigma <- 3
+→ Ekta line e duita statement likha hocche, semicolon (;) diye
+  separate kora hoyeche. true_mu=10, true_sigma=3 - "true" parameter,
+  compare korar jonno.
+
+norm_data <- rnorm(1000, true_mu, true_sigma)
+→ rnorm() diye 1000 ta normal random number generate kora hocche.
+
+mle_mu     <- mean(norm_data)
+→ Normal er mu er MLE formula: mu_hat = x_bar (sample mean).
+
+mle_sigma2 <- mean((norm_data - mle_mu)^2)     # MLE divides by n (not n-1)
+→ Sigma^2 er MLE formula: sigma_hat^2 = mean of (x - mu_hat)^2 - eita
+  E2-2 er "biased" estimator er moto, n diye vag kora hoy, n-1 diye
+  na - karon MLE formula tai bole.
+
+cat("Normal MLE of mu       :", mle_mu, " (True mu:", true_mu, ")\n")
+→ mu er MLE ar true mu pashapashi print kora hocche.
+
+cat("Normal MLE of sigma^2  :", mle_sigma2, " (True sigma^2:", true_sigma^2, ")\n")
+→ sigma^2 er MLE ar true sigma^2 pashapashi print kora hocche.
+
+## ---- Verify Normal MLE numerically using optim() ----
+neg_log_lik <- function(par, data) {
+  -sum(dnorm(data, mean = par[1], sd = sqrt(par[2]), log = TRUE))
+}
+→ Ekta custom function toiri kora hocche, name neg_log_lik. function(par,
+  data) mane ei function duita input newy - par (parameter gulo, ekta
+  vector: par[1]=mu, par[2]=sigma^2), ar data (kon data diye check
+  korbo). Function er bhitore: dnorm(..., log=TRUE) diye protita data
+  point er log-likelihood ber kora hocche (given mu, sigma). sum()
+  diye sob jog kora hocche - eita total log-likelihood. Shuru te "-"
+  (minus) diye eita "negative" kora hocche, karon optim() function
+  default e minimize kore, ar amra maximize korte chai likelihood -
+  tai negative kore minimize korle actually likelihood maximize hoy.
+
+result <- optim(c(0, 1), neg_log_lik, data = norm_data)
+→ optim() function ta ekta numerical optimization tool - eita
+  automatic best parameter khuje ber kore jeta neg_log_lik function
+  ke sobcheye choto kore. c(0,1) hocche shuru korar starting guess
+  (mu=0, sigma^2=1 diye shuru kora hocche), neg_log_lik hocche kon
+  function minimize korte hobe, data=norm_data diye kon data use
+  hobe seta bole deya hocche.
+
+cat("optim() MLE estimate - mu:", result$par[1],
+    " sigma^2:", result$par[2], "\n")
+→ result$par[1] diye optimization theke paoa mu er best estimate, ar
+  result$par[2] diye sigma^2 er best estimate print kora hocche -
+  eita age r closed-form formula (mle_mu, mle_sigma2) er shathe
+  mile jaoa uchit, jeta MLE formula ke verify kore.

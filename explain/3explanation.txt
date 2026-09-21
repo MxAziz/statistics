@@ -1,0 +1,473 @@
+
+EXPERIMENT 3.1
+Question: Write a R program to simulate decision-making processes
+using hypothesis testing.
+
+Question ta bujhle: hypothesis testing ki vabe ekta "decision" (H0
+reject korbo naki korbo na) newy, seta bohu bar simulation kore
+dekhate hobe.
+---------------------
+set.seed(123)
+→ Random number er shuru bindu fix kora hocche.
+
+true_mu <- 52
+→ Simulation e amra dhore nichi je real (true) population mean = 52
+  (kintu amra test korbo H0: mu=50 - mane H0 actually mithya).
+
+n       <- 30
+→ Protita sample e 30 ta value thakbe.
+
+sigma   <- 8
+→ Population standard deviation = 8, jana ache dhore neya hocche
+  (Z-test er jonno lagbe).
+
+alpha   <- 0.05
+→ Significance level, mane koto ta risk newy hobe Type I error e -
+  5%.
+
+n_sim   <- 1000
+→ Total 1000 bar simulation cholbe.
+
+decisions <- character(n_sim)
+→ character(1000) diye 1000 ta text (word) rakhar moto ekta khali
+  box toiri kora hocche - eikhane protibar "Reject H0" ba "Fail to
+  Reject H0" rakha hobe.
+
+for (i in 1:n_sim) {
+→ For loop, i=1 theke i=1000 porjonto cholbe.
+
+  s <- rnorm(n, true_mu, sigma)
+→ true_mu=52, sigma=8 diye 30 ta random normal number generate kora
+  hocche - eita ekta sample, jeta "real world" theke asha data
+  represent kore.
+
+  z_stat <- (mean(s) - 50) / (sigma/sqrt(n))
+→ Z-test statistic er formula: z = (sample_mean - hypothesized_mean)
+  / (sigma/sqrt(n)). mean(s) diye sample mean ber kora hocche, tar
+  theke 50 (H0 er hypothesized mean) bad deya hocche, tarpor sigma/
+  sqrt(n) (standard error) diye vag kora hocche.
+
+  p_val  <- 2 * (1 - pnorm(abs(z_stat)))
+→ pnorm() function ta normal distribution er cumulative probability
+  dey (mane "eto value porjonto ki probability ache"). abs(z_stat)
+  diye z-statistic er absolute value neya hocche (positive kora
+  hocche). 1 - pnorm(...) diye "ei value theke boro paoar probability"
+  ber kora hocche (right tail). 2 diye gun kora hocche karon eita
+  two-tailed test (duipashe check kora hocche, karon H1: mu != 50).
+  Eita e p-value.
+
+  decisions[i] <- ifelse(p_val < alpha, "Reject H0", "Fail to Reject H0")
+}
+→ ifelse() function ta ekta condition check kore - jodi p_val, alpha
+  (0.05) er cheye choto hoy, tahole "Reject H0" text ta decisions
+  box er i-number jaigay rakha hobe, nahole "Fail to Reject H0"
+  rakha hobe. } diye loop shesh.
+
+print(table(decisions))
+→ table() function ta decisions box er protita unique value (mane
+  "Reject H0" ar "Fail to Reject H0") koybar eshече seta gune dey.
+  print() diye eita screen e dekhano hocche - jemon koto bar reject
+  hoyeche, koto bar hoyni.
+
+cat("\nProportion of 'Reject H0' decisions:", mean(decisions == "Reject H0"), "\n")
+→ decisions == "Reject H0" diye ekta TRUE/FALSE list toiri hoy
+  (protita position e check hocche seta "Reject H0" kina). mean()
+  function ta TRUE ke 1 ar FALSE ke 0 dhore average ber kore - fole
+  eita e ashole "koto proportion (fraction) shomoy Reject H0 hoyeche"
+  seta bole dey.
+
+cat("(Since H1 is actually true here, this proportion represents the Power of the test)\n")
+→ Shudhu ekta message print kora hocche, bujhanor jonno je yehetu
+  amra jani true_mu=52 (H0 mithya), tai "koto bar shothik vabe Reject
+  korte parlam" seta e test er "Power" bojhay.
+
+-------------------
+EXPERIMENT 3.2
+Question: Write a R program to derive the best critical region for
+simple vs. composite hypotheses.
+
+Question ta bujhle: Neyman-Pearson Lemma onujayi duita simple
+hypothesis (H0: mu=0 vs H1: mu=2) er jonno "best critical region"
+(sobcheye best decision rule) ber korte hobe - mane kon sample mean
+er upore gele amra H0 reject korbo, seta thik korte hobe, jate
+Type I error thik 5% thake ar Power (shothik detect korar khomota)
+sobcheye beshi thake.
+---------------
+
+set.seed(123)
+→ Random number er shuru bindu fix kora hocche.
+
+n     <- 20
+→ Protita sample e 20 ta value thakbe.
+
+mu0   <- 0     # H0: mu = 0  (simple)
+→ H0 hypothesis: mu = 0 - eita "simple" hypothesis, karon ekta e
+  exact value bole.
+
+mu1   <- 2     # H1: mu = 2  (simple alternative)
+→ H1 hypothesis: mu = 2 - eitao ekta exact value, tai "simple
+  alternative".
+
+sigma <- 1
+→ Population standard deviation = 1, jana ache dhore newya hocche.
+
+alpha <- 0.05
+→ Significance level = 5%.
+
+c_value <- mu0 + qnorm(1 - alpha) * sigma/sqrt(n)
+→ Neyman-Pearson Lemma onujayi best critical region hocche: "reject
+  H0 if sample mean > c". Ei c er man ber korar formula: mu0 +
+  z_(1-alpha) * (sigma/sqrt(n)). qnorm(1-alpha) diye standard normal
+  distribution theke critical z-value ber kora hocche (jemon 0.95
+  quantile). Eita sigma/sqrt(n) (standard error) diye gun kore mu0
+  er shathe jog kora hocche - fole critical value c_value pawa jay.
+
+cat("Best Critical Region: Reject H0 if sample mean >", round(c_value, 4), "\n")
+→ round(c_value, 4) diye c_value take 4 decimal place porjonto round
+  kore print kora hocche - eita e amader decision rule.
+
+n_sim <- 10000
+→ Total 10000 bar simulation cholbe (verify korar jonno).
+
+sim_means_h0 <- replicate(n_sim, mean(rnorm(n, mu0, sigma)))
+→ replicate() function ta ekta kaj barbar (n_sim=10000 bar) repeat
+  kore, protibar er result ekta vector e jomay. Ekhane protibar
+  rnorm(n, mu0, sigma) diye H0 (mu=0) er niyom onujayi 20 ta random
+  number generate kora hocche, tarpor mean() diye tar mean ber kora
+  hocche. Fole sim_means_h0 e 10000 ta sample mean jomche, jara shob
+  e H0 sotti dhore toiri hoyeche.
+
+empirical_alpha <- mean(sim_means_h0 > c_value)
+→ sim_means_h0 > c_value diye check kora hocche kotogulo mean
+  c_value theke boro hoyeche (mane kotobar amra bhul kore H0 reject
+  korbo, jodio H0 sotti). mean() diye TRUE/FALSE er proportion ber
+  kora hocche - eita e "empirical" (simulation theke paoa) Type I
+  error rate, jeta prai alpha=0.05 er kache hoya uchit.
+
+sim_means_h1 <- replicate(n_sim, mean(rnorm(n, mu1, sigma)))
+→ Same vabe, ei bar H1 (mu=2) sotti dhore 10000 ta sample mean toiri
+  kora hocche.
+
+power <- mean(sim_means_h1 > c_value)
+→ H1 sotti thaka shortheo koto bar amra shothik vabe H0 reject korte
+  parlam (mane sample mean c_value theke boro elo), seta e test er
+  "Power".
+
+hist(sim_means_h0, breaks = 40, col = rgb(0,0,1,0.4), xlim = c(-1.5,3.5),
+     probability = TRUE, main = "Best Critical Region: H0 vs H1", xlab = "Sample Mean")
+→ sim_means_h0 diye histogram anka hocche, rgb(0,0,1,0.4) diye nil
+  color kintu 0.4 transparency (halka dekha jabe, jate porer
+  histogram er shathe overlap dekha jay). xlim diye x-axis er range
+  fix kora, probability=TRUE diye density scale, title-xlabel deya
+  hocche.
+
+hist(sim_means_h1, breaks = 40, col = rgb(1,0,0,0.4), probability = TRUE, add = TRUE)
+→ sim_means_h1 diye arekta histogram, rgb(1,0,0,0.4) diye lal color
+  transparent vabe, add=TRUE diye age r histogram er upor e boshano
+  hocche - fole duita distribution ekshathe overlap kore dekha jay.
+
+abline(v = c_value, col = "black", lwd = 2, lty = 2)
+→ abline(v=...) diye ekta vertical (khara) line anka hocche c_value
+  er upor diye, black color e dashed line - eita e amader "decision
+  boundary" (kon jaiga theke reject shuru hobe).
+
+legend("topright", legend = c("Distribution under H0","Distribution under H1","Critical value"),
+       fill = c(rgb(0,0,1,0.4), rgb(1,0,0,0.4), NA), border = NA)
+→ Legend box diye bujhano hocche - nil area mane H0 er distribution,
+  lal area mane H1 er distribution, ar third label "Critical value"
+  (er fill NA thakay eita shudhu text hishebe dekhabe).
+
+RESULT/CONCLUSION: c_value hocche best decision boundary - erpore
+gele reject korle Type I error thik alpha rakha jay ar Power
+maximum thake, jeta Neyman-Pearson Lemma bole.
+
+
+---------------
+EXPERIMENT 3.3
+Question: Write a R program to simulate Type I and Type II errors in
+hypothesis testing.
+
+Question ta bujhle: Type I error (H0 sotti thakleo reject kora) ar
+Type II error (H1 sotti thakleo H0 accept kore fela) - duitai
+simulation kore songkha diye dekhate hobe, ar dutoi distribution
+graph e overlap akare dekhate hobe.
+---------------
+
+set.seed(123)
+→ Random number er shuru bindu fix kora hocche.
+
+mu0   <- 100    # H0: mu = 100
+→ H0 hypothesis: population mean = 100.
+
+mu1   <- 105    # true mean under H1
+→ H1 er niche "true" mean dhora hocche 105.
+
+sigma <- 15
+→ Population standard deviation = 15.
+
+n     <- 25
+→ Protita sample e 25 ta value thakbe.
+
+alpha <- 0.05
+→ Significance level = 5%.
+
+n_sim <- 10000
+→ Total 10000 bar simulation cholbe.
+
+c_value <- mu0 + qnorm(1 - alpha) * sigma/sqrt(n)
+→ Age r moto (E3-2 er) formula diye critical value ber kora hocche -
+  eita e decision boundary (ei value theke boro sample mean elei
+  H0 reject).
+
+data_h0 <- replicate(n_sim, mean(rnorm(n, mu0, sigma)))
+→ 10000 bar simulation kore, protibar mu0 (=100) sotti dhore 25 ta
+  random number generate kore mean ber kora hocche - fole 10000 ta
+  sample mean paoa jay, jara sob H0 sotti dhore toiri.
+
+type1_error <- mean(data_h0 > c_value)
+→ H0 sotti thaka shortheo koto ta sample mean c_value theke boro elo
+  (mane bhul kore reject korlam) - eita e Type I error rate.
+
+data_h1 <- replicate(n_sim, mean(rnorm(n, mu1, sigma)))
+→ Same vabe, ei bar mu1 (=105) sotti dhore 10000 ta sample mean toiri
+  kora hocche.
+
+type2_error <- mean(data_h1 <= c_value)
+→ H1 sotti thaka shortheo koto ta sample mean c_value er soman ba
+  choto elo (mane bhul kore H0 accept kore fellam, jodio H1 sotti
+  chilo) - eita e Type II error rate.
+
+cat("Critical value        :", c_value, "\n")
+→ Critical value print kora hocche.
+
+cat("Type I Error (alpha)  :", type1_error, "\n")
+→ Simulation theke paoa Type I error rate print kora hocche.
+
+cat("Type II Error (beta)  :", type2_error, "\n")
+→ Simulation theke paoa Type II error rate print kora hocche.
+
+cat("Power (1 - beta)      :", 1 - type2_error, "\n")
+→ Power = 1 - Type II error, eita print kora hocche - mane test ta
+  shothik vabe H1 detect korte parche koto percent shomoy.
+
+curve(dnorm(x, mu0, sigma/sqrt(n)), from = 85, to = 120, col = "blue", lwd = 2,
+      main = "Type I and Type II Errors", ylab = "Density", xlab = "Sample Mean")
+→ curve() diye H0 er theoretical sampling distribution (normal,
+  mean=mu0, sd=sigma/sqrt(n)) er density curve anka hocche, x=85
+  theke x=120 porjonto, blue color e.
+
+curve(dnorm(x, mu1, sigma/sqrt(n)), add = TRUE, col = "red", lwd = 2)
+→ Same vabe H1 er theoretical distribution (mean=mu1) er curve, lal
+  color e, age r curve er upore boshano hocche (add=TRUE).
+
+abline(v = c_value, col = "black", lty = 2, lwd = 2)
+→ Critical value er upor diye ekta khara (vertical) dashed line
+  anka hocche - eita decision boundary.
+
+legend("topright", legend = c("Distribution under H0","Distribution under H1","Critical value"),
+       col = c("blue","red","black"), lty = c(1,1,2), lwd = 2)
+→ Legend box diye kon color kon distribution bujhacche seta dekhano
+  hocche.
+
+RESULT/CONCLUSION: Blue ar red curve er je jaigata overlap kore,
+sheikhane e Type I ar Type II error hoy - overlap jotoi beshi, error
+o toto beshi. Graph theke visually bujha jay error gulo kothay theke
+ashe.
+
+
+---------------
+EXPERIMENT 3.4
+Question: Write a R program to perform hypothesis testing step-by-step
+using real or simulated data.
+
+Question ta bujhle: ekta complete hypothesis testing procedure
+step-by-step (hypothesis, significance level, statistic, p-value,
+decision) dekhate hobe, ar shesh e R er built-in t.test() function
+diye manual hisheb verify korte hobe.
+---------------
+
+set.seed(123)
+→ Random number er shuru bindu fix kora hocche.
+
+sample_data <- rnorm(35, mean = 72, sd = 6)
+→ rnorm() diye 35 ta random normal number generate kora hocche,
+  mean=72, sd=6 diye - eita ekta "simulated" sample, dhore newya
+  hocche eita real data (jemon ekta gosthir manusher weight).
+
+cat("========== Step-by-Step Hypothesis Testing ==========\n\n")
+→ Shudhu ekta heading print kora hocche, output ke gucchano dekhate.
+
+cat("Step 1: State the Hypotheses\n")
+cat("   H0: mu = 70\n")
+cat("   H1: mu != 70\n\n")
+→ Step 1 hishebe hypothesis gulo text akare print kora hocche -
+  H0 bole population mean 70, H1 bole 70 na.
+
+alpha <- 0.05
+→ Significance level = 5% rakha hocche.
+
+cat("Step 2: Set the Significance Level\n")
+cat("   alpha =", alpha, "\n\n")
+→ Step 2 hishebe alpha er man print kora hocche.
+
+n    <- length(sample_data)
+→ length() diye sample_data e koto ta value ache seta ber kora
+  hocche (35).
+
+xbar <- mean(sample_data)
+→ Sample mean ber kora hocche.
+
+s    <- sd(sample_data)
+→ Sample standard deviation ber kora hocche.
+
+se   <- s/sqrt(n)
+→ Standard error ber kora hocche: sample sd take n er borgomul diye
+  vag kore.
+
+cat("Step 3: Compute Sample Statistics\n")
+cat("   n =", n, ", xbar =", round(xbar,3), ", s =", round(s,3),
+    ", SE =", round(se,3), "\n\n")
+→ Step 3 hishebe n, xbar, s, SE - shob statistics print kora hocche
+  (round diye 3 decimal porjonto round kora hocche pori-porar
+  shuvidhar jonno).
+
+t_stat <- (xbar - 70)/se
+→ t-test statistic er formula: t = (sample_mean - hypothesized_mean)
+  / SE. Ekhane 70 hocche H0 te bola hypothesized mean.
+
+df     <- n - 1
+→ Degrees of freedom = n-1 = 34, t-distribution er jonno lagbe.
+
+cat("Step 4: Compute the Test Statistic\n")
+cat("   t =", round(t_stat,4), " with df =", df, "\n\n")
+→ Step 4 hishebe t-statistic ar df print kora hocche.
+
+p_value <- 2 * (1 - pt(abs(t_stat), df))
+→ pt() function ta t-distribution er cumulative probability dey.
+  abs(t_stat) diye t-statistic er absolute value newya hocche. 1 -
+  pt(...) diye "ei value theke boro paoar probability" (right tail)
+  ber kora hocche, tarpor 2 diye gun kora hocche karon eita two-tailed
+  test.
+
+cat("Step 5: Compute the p-value\n")
+cat("   p-value =", round(p_value,5), "\n\n")
+→ Step 5 hishebe p-value print kora hocche.
+
+cat("Step 6: Make a Decision\n")
+if (p_value < alpha) {
+  cat("   Since p-value <", alpha, ", we REJECT H0.\n")
+} else {
+  cat("   Since p-value >=", alpha, ", we FAIL TO REJECT H0.\n")
+}
+→ Step 6 hishebe if-else diye decision newya hocche - jodi p_value,
+  alpha theke choto hoy tahole "REJECT H0" print hobe, nahole "FAIL
+  TO REJECT H0" print hobe.
+
+cat("\nStep 7: Verify with built-in t.test() function\n")
+print(t.test(sample_data, mu = 70))
+→ Step 7 hishebe R er built-in t.test() function ta call kora
+  hocche, jeta sample_data ke H0: mu=70 er against test kore. eita
+  automatic t-statistic, df, p-value, confidence interval shob
+  print kore dey - jeta amader manual hisheb er shathe mile jaoa
+  uchit, eita e verification.
+
+
+---------------
+EXPERIMENT 3.5
+Question: Write a R program to compare the power of different tests
+for the same hypothesis.
+
+Question ta bujhle: ekta e hypothesis (H0: mu=50 vs H1: mu=54) test
+korar jonno tinta different test method - Z-test, t-test, ar
+Wilcoxon signed-rank test - ache. Ei tinta test er "power" (shothik
+vabe H1 detect korar khomota) compare korte hobe.
+---------------
+
+set.seed(123)
+→ Random number er shuru bindu fix kora hocche.
+
+n       <- 20
+→ Protita sample e 20 ta value thakbe.
+
+mu0     <- 50
+→ H0 hypothesis er mean = 50.
+
+true_mu <- 54
+→ Amra dhore nichi real (true) mean = 54 (H1 sotti).
+
+sigma   <- 8
+→ Population standard deviation = 8.
+
+alpha   <- 0.05
+→ Significance level = 5%.
+
+n_sim   <- 5000
+→ Total 5000 bar simulation cholbe.
+
+power_z       <- 0
+→ Z-test kotobar H0 reject korlo, tar counter - shuru te 0.
+
+power_t       <- 0
+→ t-test kotobar H0 reject korlo, tar counter - shuru te 0.
+
+power_wilcox  <- 0
+→ Wilcoxon test kotobar H0 reject korlo, tar counter - shuru te 0.
+
+for (i in 1:n_sim) {
+  s <- rnorm(n, true_mu, sigma)
+→ For loop, protibar true_mu=54 use kore 20 ta random normal number
+  generate kora hocche - mane H1 sotti dhore sample toiri hocche.
+
+  # Z-test (sigma assumed known)
+  z_stat <- (mean(s) - mu0) / (sigma/sqrt(n))
+  p_z <- 2 * (1 - pnorm(abs(z_stat)))
+  if (p_z < alpha) power_z <- power_z + 1
+→ Z-test statistic hisheb kora hocche, p-value ber kora hocche
+  (pnorm diye), tarpor if condition diye check kora hocche p_z,
+  alpha theke choto kina - jodi hoy, tahole power_z counter ta 1
+  bariye deya hocche (power_z <- power_z + 1 mane age r man er
+  shathe 1 jog kore abar power_z e rakha).
+
+  # One-sample t-test
+  p_t <- t.test(s, mu = mu0)$p.value
+  if (p_t < alpha) power_t <- power_t + 1
+→ R er built-in t.test() function diye direct p-value ber kora
+  hocche ($p.value diye function er result theke shudhu p-value
+  ta ber kore neya hocche). p_t, alpha theke choto hole power_t
+  counter bariye deya hocche.
+
+  # Wilcoxon signed-rank test (non-parametric)
+  p_w <- suppressWarnings(wilcox.test(s, mu = mu0)$p.value)
+  if (p_w < alpha) power_wilcox <- power_wilcox + 1
+}
+→ wilcox.test() hocche ekta non-parametric test (normal distribution
+  na dhore o kaj kore), tar p-value ber kora hocche. suppressWarnings()
+  diye chotto warning message gulo (jemon "tie" thakle warning dey)
+  screen e ashte deya hocche na, jate output porishkar thake. p_w
+  choto hole power_wilcox counter bariye deya hocche. } diye loop
+  shesh - total 5000 bar protita test korar por counter gulote koto
+  bar reject hoyeche seta joma thakbe.
+
+cat("Power of Z-test        :", power_z / n_sim, "\n")
+→ power_z (koto bar reject hoyeche) take n_sim (5000) diye vag kore
+  proportion (Power) ber kora hocche, print kora hocche.
+
+cat("Power of t-test        :", power_t / n_sim, "\n")
+→ Same vabe t-test er power ber kore print kora hocche.
+
+cat("Power of Wilcoxon test :", power_wilcox / n_sim, "\n")
+→ Same vabe Wilcoxon test er power ber kore print kora hocche.
+
+barplot(c(Z = power_z/n_sim, T = power_t/n_sim, Wilcoxon = power_wilcox/n_sim),
+        col = c("skyblue","lightgreen","salmon"),
+        main = "Power Comparison of Different Tests", ylab = "Power")
+→ c(Z=..., T=..., Wilcoxon=...) diye ekta named vector toiri kora
+  hocche (protita value er ekta nam). barplot() diye ei tinta value
+  ke bar chart akare pashapashi dekhano hocche, protita bar er
+  color alada (skyblue, lightgreen, salmon), title ar y-axis er nam
+  deya hocche.
+
+RESULT/CONCLUSION: Jehetu ei simulation er data normal distribution
+theke asha, shadharonoto parametric test (Z-test, t-test) er power,
+non-parametric Wilcoxon test er cheye beshi hoy - eita bar chart e
+spasto dekha jay.

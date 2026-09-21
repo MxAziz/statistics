@@ -1,0 +1,459 @@
+
+EXPERIMENT 1.1
+Question: Write a R program to simulate F-distributed data and
+study its relationship with Chi-square distributions.
+
+Question ta bujhle: amader duita kaj korte hobe - (1) F-distribution
+theke random data generate kora, ar (2) dekhano je duita independent
+Chi-square variable er ratio theke o F-distribution paoa jay
+(F = (Chisq1/df1)/(Chisq2/df2)).
+-------------------
+
+set.seed(123)
+→ Ei line ta random number generator er shuru bindu (seed) fix kore
+  dilo. Fole program barbar run korleo shomoy shomoy same random
+  number paoa jabe, result reproducible thakbe.
+
+n   <- 10000
+→ n variable e 10000 rakha hocche - koto gulo data point generate
+  hobe seta thik kora hocche.
+
+df1 <- 5
+→ Prothom Chi-square variable er degrees of freedom (df1) = 5
+  rakha hocche.
+
+df2 <- 10
+→ Dwitiyo Chi-square variable er degrees of freedom (df2) = 10
+  rakha hocche. df1 ar df2 mile F-distribution er shape thik kore.
+
+f_data <- rf(n, df1, df2)
+→ rf() function ta R er built-in function jeta directly F-distribution
+  theke random number generate kore. n=10000 ta F-distributed number
+  toiri hoye f_data variable e rakha hocche.
+
+chisq1 <- rchisq(n, df1)
+→ rchisq() function diye df1=5 wala 10000 ta Chi-square random number
+  generate kore chisq1 e rakha hocche.
+
+chisq2 <- rchisq(n, df2)
+→ Ekhane arekta independent Chi-square sample generate kora hocche,
+  kintu ei bar df2=10 diye. chisq2 e 10000 ta number thakbe.
+
+f_from_chisq <- (chisq1/df1) / (chisq2/df2)
+→ Eita hocche F-distribution er original definition ta code e implement
+  kora: F = (Chisq1/df1) / (Chisq2/df2). Prottek chisq1 value take df1
+  diye vag kore, prottek chisq2 value take df2 diye vag kore, tarpor
+  ratio ber kora hocche - element-wise, tai 10000 ta value ekshathe
+  hisheb hoye jay.
+
+cat("Mean of rf() sample            :", mean(f_data), "\n")
+→ f_data (direct rf() theke asha) er mean/average print kora hocche
+  screen e, jate pore compare kora jay.
+
+cat("Mean of F derived from Chisq    :", mean(f_from_chisq), "\n")
+→ Chi-square theke manually toiri kora f_from_chisq er mean print kora
+  hocche - eta first mean er kachakachi hobe bole ashi kora hocche.
+
+cat("Theoretical mean of F(df1,df2)  :", df2/(df2-2), "\n")
+→ F-distribution er theoretical (formula theke asha) mean = df2/(df2-2)
+  print kora hocche, jeta = 10/(10-2) = 1.25. Ei tinta mean e ekshathe
+  compare kore dekha hocche sob mile jacche kina.
+
+par(mfrow = c(1,2))
+→ Plot area take 1 row, 2 column e bhag kora hocche, jate duita
+  histogram pashapashi dekha jay.
+
+hist(f_data, breaks = 50, probability = TRUE, col = "skyblue",
+     main = "F-distribution (rf)", xlab = "F value", xlim = c(0,5))
+→ f_data diye ekta histogram anka hocche. breaks=50 mane 50 ta bar diye
+  histogram hobe. probability=TRUE mane y-axis e density dekhabe, count
+  na, jate পরে theoretical curve er shathe scale mile jay. col diye
+  "skyblue" rong deya hocche. main diye title, xlab diye x-axis er nam,
+  xlim diye x-axis er range (0 theke 5) set kora hocche.
+
+curve(df(x, df1, df2), add = TRUE, col = "red", lwd = 2)
+→ df(x, df1, df2) hocche F-distribution er theoretical density function.
+  curve() function eta diye ekta lal (red) smooth curve anke, ar
+  add=TRUE dile eta age r histogram er upor e bosbe, notun graph banabe
+  na. lwd=2 mane line ektu mota kora hocche jate spasto dekha jay.
+
+hist(f_from_chisq, breaks = 50, probability = TRUE, col = "lightgreen",
+     main = "F from Chi-square ratio", xlab = "F value", xlim = c(0,5))
+→ Same rokom histogram, kintu ei bar f_from_chisq (Chi-square theke
+  manually toiri kora F data) diye, lightgreen rong e, pasher ghor e.
+
+curve(df(x, df1, df2), add = TRUE, col = "red", lwd = 2)
+→ Ekhane o same theoretical F density curve (lal rong e) sobuj
+  histogram er upor bosano hocche, compare korar jonno.
+
+RESULT/CONCLUSION: Dutoi histogram (nil o sobuj) jodi lal theoretical
+curve er shathe mile jay, tahole visually proman hoy je duita
+independent Chi-square variable er ratio theke e F-distribution
+paoa jay.
+
+
+-------
+EXPERIMENT 1.2
+Question: Write a R program to generate Chi-square distributed
+data and analyze its properties.
+
+Question ta bujhle: (1) Chi-square distribution theke random data
+generate korte hobe, ar (2) sei data theke mean, variance, skewness
+hisheb kore dekhate hobe je egulo theoretical formula (mean=df,
+variance=2*df) er shathe mile jay kina. Sathe Chi-square er
+definition (df songkhok independent normal variable er borger
+joggofol) use kore manually o data toiri kore dekhate hobe.
+----------------------
+
+set.seed(123)
+→ Random number generator er shuru bindu fix kora hocche, jate
+  barbar run korle same result pai.
+
+n  <- 10000
+→ n = 10000, koto ta data point toiri hobe seta.
+
+df <- 6
+→ df = 6, Chi-square distribution er degrees of freedom.
+
+chisq_data <- rchisq(n, df)
+→ rchisq() built-in function diye df=6 wala 10000 ta random Chi-square
+  number generate kore chisq_data e rakha hocche - eita direct
+  generation.
+
+cat("Sample Mean       :", mean(chisq_data), " (Theoretical:", df, ")\n")
+→ chisq_data er sample mean (average) ber kore print kora hocche, sathe
+  theoretical mean (=df=6) o dekhano hocche compare korar jonno.
+
+cat("Sample Variance    :", var(chisq_data), " (Theoretical:", 2*df, ")\n")
+→ var() function diye sample variance ber kora hocche, ar theoretical
+  variance (=2*df=12) er shathe pashapashi print kora hocche.
+
+cat("Sample Skewness    :", mean((chisq_data-mean(chisq_data))^3)/sd(chisq_data)^3,
+    " (Theoretical:", sqrt(8/df), ")\n")
+→ Ei line ta sample skewness (koto ta ek dike hela ache seta) hisheb
+  kortese. chisq_data - mean(chisq_data) diye protita value theke mean
+  bad deya hocche (deviation), tarpor ^3 diye cube kora hocche, tarpor
+  mean() diye average neya hocche. Eita divide kora hocche sd()^3 diye
+  (standard deviation ke cube kore). Full formula ta sample skewness er
+  standard definition. Tar shathe theoretical skewness sqrt(8/df) o
+  print kora hocche.
+
+hist(chisq_data, breaks = 50, probability = TRUE, col = "lightblue",
+     main = paste("Chi-square Distribution (df =", df, ")"), xlab = "x")
+→ chisq_data diye histogram anka hocche, 50 ta bar diye, probability
+  scale e (density hishebe), lightblue color e. paste() function diye
+  title er moddhe df er value jure deya hocche (jemon "df = 6").
+
+curve(dchisq(x, df), add = TRUE, col = "red", lwd = 2)
+→ dchisq(x, df) hocche Chi-square er theoretical density function.
+  eita diye lal curve anka hocche, ar add=TRUE thakay eta age r
+  histogram er upor e bosbe - visual compare korar jonno.
+
+z <- matrix(rnorm(n*df), ncol = df)
+→ Ekhane Chi-square er definition onujayi manually data toiri kora
+  hocche. rnorm(n*df) mane 10000*6=60000 ta standard normal random
+  number toiri kora hocche. matrix(..., ncol=df) diye ei 60000 ta
+  number ke ekta table akare shajano hocche jekhane column shonkha
+  df=6 - fole row shonkha automatic 10000 hoye jabe. Protita row e
+  6 ta independent normal number thakbe.
+
+chisq_manual <- rowSums(z^2)
+→ z^2 diye matrix er protita number ke square kora hocche. rowSums()
+  diye protita row er sob value jog kore ekta shongkha deya hocche.
+  Jehetu protita row e 6 ta squared normal number ache, protita row
+  er jogfol thik Z1^2+Z2^2+...+Z6^2 - jeta definition onujayi e ekta
+  Chi-square(df=6) number! Fole 10000 ta row theke 10000 ta manually
+  toiri kora Chi-square number pawa gelo, chisq_manual e jomlo.
+
+cat("\nMean of manually generated Chi-square:", mean(chisq_manual), "\n")
+→ chisq_manual er mean print kora hocche - eitao 6 er kachakachi
+  ashbe, jeta proman kore je duita method (rchisq() ar manual)
+  same result dey.
+
+
+----------------
+EXPERIMENT 1.3
+Question: Write a R program to compare t-distribution with normal
+distribution for small sample sizes.
+
+Question ta bujhle: (1) t-distribution ar normal distribution ke
+compare korte hobe, (2) bishesh vabe choto sample size / choto df
+er khetre - karon t-distribution choto df e normal theke onek
+alada (mota tail) dekhay, kintu df barte barte normal er moto hoye
+jay.
+-------------
+
+set.seed(123)
+→ Random number er shuru bindu fix kora hocche.
+
+n        <- 10000
+→ n = 10000, koto ta random number generate hobe.
+
+df_small <- 5
+→ df_small = 5 rakha hocche - t-distribution er jonno ekta choto df
+  select kora hoyeche, jate tail effect spasto dekha jay.
+
+t_data <- rt(n, df_small)
+→ rt() built-in function diye df=5 wala 10000 ta t-distributed random
+  number generate kore t_data e rakha hocche.
+
+z_data <- rnorm(n)
+→ rnorm(n) diye standard normal N(0,1) theke 10000 ta random number
+  generate kora hocche (mean/sd na dile default mean=0, sd=1 dhore
+  ney). z_data e rakha hocche - eita amader "normal" nomuna.
+
+plot(density(z_data), col = "blue", lwd = 2,
+     main = "t-distribution vs Normal Distribution (small df)",
+     xlab = "x", ylim = c(0,0.45), xlim = c(-6,6))
+→ density(z_data) function ta raw data theke ekta smooth curve/shape
+  hisheb kore dey (kernel density estimate). plot() diye ei curve ta
+  graph e anka hocche, blue color e, line width 2 diye mota kore.
+  main diye title, xlab diye x-axis er nam. ylim=c(0,0.45) diye y-axis
+  er range fix kora hocche jate duita curve same scale e dekha jay.
+  xlim=c(-6,6) diye x-axis er range fix kora hocche jate t-distribution
+  er mota tail o puropuri dekha jay.
+
+lines(density(t_data), col = "red", lwd = 2)
+→ lines() function ta notun graph na baniye, age r plot() e bananu
+  graph er upor e arekta line/curve boshay. Ekhane t_data er density
+  curve, red color e (df=5 er t-distribution) age r blue normal curve
+  er upor boshano hocche - ekhon eki graph e duita curve dekha jabe.
+
+legend("topright", legend = c("Normal(0,1)", paste("t (df =", df_small, ")")),
+       col = c("blue","red"), lwd = 2)
+→ legend() graph er moddhe ekta choto box boshay jeta bole dey kon
+  color ki bujhacche. "topright" diye box ta graph er upore-danik
+  dike bosbe. legend= diye duita label toiri kora hocche - "Normal(0,1)"
+  ar "t (df = 5)" (paste() diye lekha ar shonkha jura lagano hocche).
+  col diye protita label er pashe kon color dekhabe seta thik kora
+  hocche.
+
+cat("Variance of Normal(0,1)   :", var(z_data), "\n")
+→ z_data er sample variance print kora hocche - eita prai 1 hobe,
+  karon standard normal er theoretical variance e 1.
+
+cat("Variance of t (df=5)      :", var(t_data),
+    " (Theoretical:", df_small/(df_small-2), ")\n\n")
+→ t_data er sample variance print kora hocche, sathe theoretical
+  variance = df/(df-2) = 5/(5-2) = 1.67 o dekhano hocche. Ekhane e
+  mul parthokko dekha jay - t er variance normal theke beshi (choto
+  df thakay).
+
+cat("Effect of increasing df (t -> Normal as df increases):\n")
+→ Shudhu ekta message print hocche, porer part e ki dekhabe tar
+  bhumika hishebe.
+
+dfs <- c(2, 5, 15, 30, 100)
+→ c() function ta koyekta value jura lagiye ekta vector (list) bananay
+  (c mane "combine"). Ekhane 5 ta different df value - 2, 5, 15, 30,
+  100 - ekta list e rakha hocche dfs name e. Choto theke boro df er
+  ekta series, jate df barar shathe ki poriborton hoy seta dekha jay.
+
+for (d in dfs) {
+  cat("df =", d, " -> t-distribution variance =", var(rt(n, d)), "\n")
+}
+→ Eita ekta for loop - same kaj barbar, different value diye korar
+  jonno. dfs list er protita value ek ek kore niye, seta d variable e
+  rekhe, {} er bhitorer code ta chalabe. Fole d=2, tarpor d=5, tarpor
+  d=15... evabe d=100 porjonto - total 5 bar loop cholbe. Protibar
+  loop er bhitore: rt(n, d) diye sei d value er df niye 10000 ta notun
+  t-distributed number banano hocche, tarpor var() diye tar variance
+  ber kora hocche, ar cat() diye seta print kora hocche.
+
+RESULT/CONCLUSION: df=2 er jonno variance onek boro hobe, kintu df
+barte barte (5, 15, 30, 100) variance dhire dhire 1 er kachakachi
+chole ashbe - mane songkhay proman hoye jabe je t-distribution normal
+distribution er dike agiye jacche.
+
+
+------------------
+EXPERIMENT 1.4
+Question: Write a R program to generate samples from a population
+and study the distribution of medians and ranges.
+
+Question ta bujhle: (1) ekta population theke barbar chotto sample
+tulte hobe, (2) protita sample theke median ar range hisheb korte
+hobe, (3) evabe bohu bar sample tolar pore je onek gulo median ar
+range paoa gelo, segulor nijoshsho ekta distribution (sampling
+distribution) toiri hoy - eita study korte hobe.
+--------------------
+
+set.seed(123)
+→ Random number er shuru bindu fix kora hocche.
+
+pop <- rnorm(100000, mean = 50, sd = 10)   # population
+→ rnorm() diye 100000 ta normal random number toiri kora hocche,
+  mean=50, sd=10 diye. Eita amader "population" - pura kalponik
+  jonoshonkha, jekhan theke amra barbar nomuna tulbo. # er porer
+  lekha "population" hocche comment, R eta chalay na, shudhu manusher
+  jonno note.
+
+n_samples   <- 1000
+→ Amra total koto bar sample tulbo - 1000 bar, repeat hobe.
+
+sample_size <- 30
+→ Protibar ekta sample e koto ta value tola hobe population theke -
+  30 ta kore.
+
+medians <- numeric(n_samples)
+→ numeric(1000) ekta khali jaiga toiri kore - 1000 ta shongkha rakhar
+  moto ekta khali vector (shob gulo shuru te 0 diye bhora thake).
+  medians name e ekta khali box toiri holo (1000 ta median rakhar
+  jonno).
+
+ranges  <- numeric(n_samples)
+→ Same rokom, ranges name e arekta khali box toiri holo (1000 ta
+  range rakhar jonno).
+
+for (i in 1:n_samples) {
+→ For loop shuru holo. 1:n_samples mane 1:1000 - eita 1 theke 1000
+  porjonto sob shongkha er ekta list toiri kore. i variable e ek ek
+  kore 1, 2, 3... 1000 porjonto value boshiye, protibar {} er
+  bhitorer code ta chalabe - mane total 1000 bar repeat hobe.
+
+  s <- sample(pop, sample_size)
+→ sample() function ta pop (amader 1 lakh shongkhar population)
+  theke random vabe sample_size mane 30 ta value tole (ekta chotto
+  nomuna). Ei 30 ta value s variable e jomlo. Protibar loop cholar
+  shomoy notun 30 ta value tola hocche, jehetu eita random selection.
+
+  medians[i] <- median(s)
+→ median(s) diye ei 30 ta value (s) ke choto theke boro shajale
+  majhkhaner value ki, seta ber kora hocche. medians[i] <- ... diye
+  ei median ta "medians" box er i-number jaigay boshano hocche.
+
+  ranges[i]  <- max(s) - min(s)
+}
+→ max(s) diye sample er sobcheye boro value, min(s) diye sobcheye
+  choto value ber kora hocche. max(s)-min(s) = range. Eita ranges
+  box er i-number jaigay boshano hocche. } diye for loop shesh.
+
+cat("Mean of sample medians :", mean(medians), "\n")
+→ 1000 ta median er average print kora hocche - median gulor
+  sampling distribution er kendro kothay seta bujhaye.
+
+cat("SD of sample medians   :", sd(medians), "\n")
+→ 1000 ta median koto ta chorano ache tar measure (standard
+  deviation) print kora hocche - eita ke bola hoy standard error of
+  median.
+
+cat("Mean of sample ranges  :", mean(ranges), "\n")
+→ 1000 ta range er average print kora hocche.
+
+cat("SD of sample ranges    :", sd(ranges), "\n")
+→ 1000 ta range koto ta chorano ache tar SD print kora hocche.
+
+par(mfrow = c(1,2))
+→ Plot area take 1 row, 2 column e bhag kora hocche, duita histogram
+  pashapashi dekhanor jonno.
+
+hist(medians, breaks = 30, col = "orange",
+     main = "Sampling Distribution of Median", xlab = "Median")
+→ 1000 ta median diye histogram anka hocche - eitai median er
+  sampling distribution er chobi. breaks=30 mane 30 ta bar e bhag
+  kora, orange color e, title ar x-axis er nam deya hocche.
+
+hist(ranges, breaks = 30, col = "purple",
+     main = "Sampling Distribution of Range", xlab = "Range")
+→ Same vabe 1000 ta range diye arekta histogram, purple color e,
+  pasher ghor e anka hocche.
+
+RESULT/CONCLUSION: Median er histogram shadharonoto majhkhane uncha,
+duipashe shomanvabe kome jaoa (bell-shaped, normal er moto) dekhabe.
+Range er histogram ektu vinno - shadharonoto ek dike beshi tan thake
+(skewed), karon range shobshomoy positive ar tar nicher shima (0)
+ache kintu upor er dike beshi chorate pare.
+
+
+--------------------
+EXPERIMENT 1.5
+Question: Write a R program to estimate population parameters from
+sample data.
+
+Question ta bujhle: ekta sample data theke population er parameter
+(mean, variance) estimate korte hobe, sathe standard error ar 95%
+confidence interval o ber korte hobe - jate bojha jay sample theke
+paoa estimate koto ta bhorshajoggo.
+--------------------
+
+set.seed(123)
+→ Random number er shuru bindu fix kora hocche.
+
+population <- rnorm(50000, mean = 40, sd = 8)
+→ rnorm() diye 50000 ta normal random number toiri kora hocche,
+  mean=40, sd=8 diye - eita amader "jana" population, jar real
+  mean ar sd amra age theke jani (compare korar jonno).
+
+sample_data <- sample(population, 200)
+→ sample() function diye population theke 200 ta value random vabe
+  tola hocche - eita amader "sample", jeta niye amra kaj korbo (real
+  life e amra shudhu ei sample ta e pai, pura population na).
+
+n           <- length(sample_data)
+→ length() function diye sample_data e koto ta value ache seta ber
+  kora hocche (200), n variable e rakha hocche.
+
+sample_mean <- mean(sample_data)
+→ mean() diye sample er average ber kora hocche - eita population
+  mean er ekta "point estimate" (ekok anuman).
+
+sample_var  <- var(sample_data)
+→ var() diye sample er variance ber kora hocche.
+
+sample_sd   <- sd(sample_data)
+→ sd() diye sample er standard deviation ber kora hocche.
+
+se_mean     <- sample_sd/sqrt(n)
+→ Standard Error of Mean er formula: SE = sample_sd / sqrt(n).
+  sqrt(n) mane n er borgomul (n=200 hole prai 14.14). Sample SD ke
+  ei borgomul diye vag kora hocche. Ei SE bole dey - jodi barbar
+  alada alada sample theke mean hisheb kora hoto, tahole sei mean
+  gulo koto ta othanama (chorano) korto. n boro hole SE choto hoy,
+  mane mean beshi bhorshajoggo hoy.
+
+ci_lower <- sample_mean - qt(0.975, n-1) * se_mean
+→ 95% Confidence Interval er nicher shima ber kora hocche. qt(0.975,
+  n-1) hocche t-distribution er ekta critical value (quantile) - 0.975
+  mane amra 95% CI chai, tai duipashe mile 5% bad rekhe, upore 97.5%
+  porjonto value ber kora hocche. n-1 hocche degrees of freedom
+  (sample size bad 1, karon mean age theke use hoyeche). Ei critical
+  value ke se_mean diye gun kore "margin of error" ber kora hocche,
+  tarpor sample_mean theke eta bad deya hocche.
+
+ci_upper <- sample_mean + qt(0.975, n-1) * se_mean
+→ Same margin of error ta sample_mean er shathe jog kore upper limit
+  ber kora hocche. ci_lower ar ci_upper mile ekta range toiri kore
+  (jemon [38.9, 40.5]) - amra 95% nishchit je true population mean
+  ei duita shongkhar majhkhane kothao ache.
+
+cat("Estimated Mean            :", sample_mean, "\n")
+→ Sample theke paoa mean print kora hocche.
+
+cat("Estimated Variance        :", sample_var, "\n")
+→ Sample theke paoa variance print kora hocche.
+
+cat("Estimated SD               :", sample_sd, "\n")
+→ Sample theke paoa standard deviation print kora hocche.
+
+cat("Standard Error of Mean     :", se_mean, "\n")
+→ Standard error er man print kora hocche.
+
+cat("95% Confidence Interval    : [", ci_lower, ",", ci_upper, "]\n")
+→ [ ] bracket diye, majhe comma diye, ci_lower ar ci_upper ke ekta
+  range akare shundor vabe print kora hocche - jevabe statistics
+  boi e CI lekha hoy sei format e.
+
+cat("True Population Mean       :", mean(population), "\n")
+→ Pura population er real mean (jeta amra age theke jani, karon amra
+  nijei generate korechi) print kora hocche - eita CI er shathe
+  compare korar jonno, dekhar jonno je real mean ta CI er range er
+  moddhe pore kina.
+
+cat("True Population Variance   :", var(population), "\n")
+→ Pura population er real variance print kora hocche, compare korar
+  jonno.
+
+RESULT/CONCLUSION: Sample theke paoa estimate (point estimate) ar
+95% CI compare kore dekha hocche je true population parameter, sample
+theke paoa confidence interval er moddhe pore kina - eitai point
+estimation ar interval estimation er practical dhaka.
